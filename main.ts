@@ -22,6 +22,7 @@ async function handler(req: Request): Promise<Response> {
 
   if (PATHNAME === TASK && req.method == "POST") {
     const { task } = await req.json();
+    const taskID = generateTaskId();
     try {
       await KV.set(["task", generateTaskId()], task);
       const tasks = await generateTaskList();
@@ -51,7 +52,8 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  if (PATHNAME === TASK && req.method == "DELETE") {
+  console.log(PATHNAME, PATHNAME.split("/"));
+  if (PATHNAME.split("/") && req.method == "DELETE") {
     const { taskId } = await req.json();
     console.log(`${req.method} for ${taskId}`);
     try {
@@ -72,22 +74,21 @@ async function handler(req: Request): Promise<Response> {
 }
 
 function generateTaskId(): string {
-  return `${Date.now()}-${crypto.randomUUID()}`;
+  return crypto.randomUUID();
 }
 
 async function generateTaskList(): Promise<string> {
   const tasks = KV.list({
     prefix: ["task"],
   });
-
   let list = `<div class="flex flex-col w-full">`;
   for await (const task of tasks) {
     const next =
-      `<div class="flex flex-row justify-between items-center border-b border-black text-md " key=${
-        task.key[1]
-      }> 
+      `<div class="flex flex-row justify-between items-center border-b border-black text-md " }> 
       <p> ${task.value} </p>
-      <button type="submit"  hx-ext="json-enc"  class="p-2 rounded mr-2 hover:text-red-500" hx-delete="/tasks" hx-target="#tasks">X</button></div>`;
+      <button type="submit" class="p-2 rounded mr-2 hover:text-red-500" hx-delete="/tasks/${
+        task.key[1]
+      }" hx-target="#tasks">X</button></div>`;
     list += next;
   }
   list += `</div> `;
