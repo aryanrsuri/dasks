@@ -26,8 +26,8 @@
     </header>
     <div class=" container  items-center justify-center py-4 px-2 w-full  ">
       <form class="flex flex-row" hx-post="/tasks" hx-target="#tasks" hx-ext="json-enc" _="on submit target.reset()" />
-      <input id="task" name="task" type="text" placeholder="" class="text-sm p-2 border rounded w-full mr-8" />
-      <button type="submit" class="p-2 bg-orange-600 text-white rounded disabled:opacity-50 "> Add </button>
+      <input id="task" name="task" type="text" placeholder="Enter Task..."
+        class="text-sm p-2 border rounded w-full mr-8" />
     </div>
     <div class="flex  items-center py-4 px-2" id="tasks" hx-get="/tasks" hx-trigger="load">
     </div>

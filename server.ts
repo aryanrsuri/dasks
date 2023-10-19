@@ -35,6 +35,19 @@ app
     await KV.set(["tasks", uuid], t);
     const html = await generateTaskList();
     return c.html(html);
+  })
+  .patch("/tasks", async (c) => {
+    // console.log(await c.req.text());
+    console.log(await c.req.json());
+  })
+  .delete("/tasks/:uuid", async (c) => {
+    const { uuid } = c.req.param();
+    const result = await deleteTask(uuid);
+    if (result === true) {
+      const html = await generateTaskList();
+      return c.html(html);
+    }
+    return new Response("NOT FOUND", { status: 404 });
   });
 
 const index = async () => {
@@ -54,11 +67,20 @@ const index = async () => {
     },
   });
 };
+
+async function deleteTask(uuid: string): Promise<boolean> {
+  try {
+    await KV.delete(["tasks", uuid]);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 async function deleteAll() {
   const tasks = KV.list({
     prefix: ["tasks"],
   });
-
   for await (const task of tasks) {
     KV.delete(["tasks", task.value.uuid]);
   }
@@ -69,13 +91,11 @@ async function generateTaskList(): Promise<string> {
   });
   let list = `<div class="flex flex-col w-full">`;
   for await (const task of tasks) {
-    console.log(task.value);
-    const next =
-      `<div class="flex flex-row justify-between items-center border-b border-black text-md " }> 
-      <p> ${task.value.task} </p>
-      <button type="submit" class="p-2 rounded mr-2 hover:text-red-500" hx-delete="/tasks/${
-        task.key[1]
-      }" hx-target="#tasks">X</button></div>`;
+    const next = `<div class="flex flex-row items-center text-md " }> 
+      <p class="grow"> ${task.value.task} </p>
+
+      <input class="p-0 w-24 rounded-none focus:rounded-none mr-2 font-bold text-green-500" type="text" hx-patch="/tasks" placeholder="Edit"></input>
+      <button class="p-2 rounded-none mr-2 font-bold text-red-500" hx-delete="/tasks/${task.value.uuid}" hx-target="#tasks">Delete</button></div>`;
     list += next;
   }
   list += `</div> `;
