@@ -16,8 +16,11 @@ app
     return c.html(html);
   })
   .get("/tasks/delete_all", async (c) => {
-    deleteAll();
-    return c.text("Ok");
+    const result = await deleteAll();
+    if (result == true) {
+      return c.text("Ok");
+    }
+    return c.text("NOT FOUND");
   })
   .post("/tasks", async (c) => {
     const { task } = await c.req.json();
@@ -36,9 +39,13 @@ app
     const html = await generateTaskList();
     return c.html(html);
   })
-  .patch("/tasks", async (c) => {
-    // console.log(await c.req.text());
-    console.log(await c.req.json());
+  .post("/tasks/:uuid", async (c) => {
+    const { task } = await c.req.json();
+    const { uuid } = await c.req.param();
+    console.log(`uuid of task is : ${uuid}`);
+    console.log(task);
+    // const { uuid } = c.req.param();
+    // const result = await editTask(uuid, task);
   })
   .delete("/tasks/:uuid", async (c) => {
     const { uuid } = c.req.param();
@@ -47,10 +54,10 @@ app
       const html = await generateTaskList();
       return c.html(html);
     }
-    return new Response("NOT FOUND", { status: 404 });
+    return c.text("NOT FOUND");
   });
 
-const index = async () => {
+const index = async (): Promise<Response> => {
   let file: Deno.FsFile;
   let stream: ReadableStream<Uint8Array>;
   try {
@@ -77,29 +84,39 @@ async function deleteTask(uuid: string): Promise<boolean> {
   return true;
 }
 
-async function deleteAll() {
+// async function editTask(uuid: string, task: string): Promise<boolean> {
+//   try {
+//     await KV.set(["tasks", uuid], task);
+//   } catch {
+//     return false;
+//   }
+//   return true;
+// }
+
+const deleteAll = async () => {
   const tasks = KV.list({
     prefix: ["tasks"],
   });
   for await (const task of tasks) {
     KV.delete(["tasks", task.value.uuid]);
   }
-}
+
+  return true;
+};
+
 async function generateTaskList(): Promise<string> {
   const tasks = KV.list({
     prefix: ["tasks"],
   });
   let list = `<div class="flex flex-col w-full">`;
   for await (const task of tasks) {
-    const next = `<div class="flex flex-row items-center text-md " }> 
-      <p class="grow"> ${task.value.task} </p>
+    const next = `<div class="flex flex-row items-center text-"> 
+      <p id="task-${task.value.uuid}"class="grow"> ${task.value.task} </p>
+      <button class="p-2 rounded-none mr-2 font-bold text-green-500" hx-delete="/tasks/${task.value.uuid}" hx-target="#tasks">  <i class="fa fa-check-circle-o hover:text-red-500" aria-hidden="true"></i>  </button></div>`;
 
-      <input class="p-0 w-24 rounded-none focus:rounded-none mr-2 font-bold text-green-500" type="text" hx-patch="/tasks" placeholder="Edit"></input>
-      <button class="p-2 rounded-none mr-2 font-bold text-red-500" hx-delete="/tasks/${task.value.uuid}" hx-target="#tasks">Delete</button></div>`;
     list += next;
   }
   list += `</div> `;
-
   return list;
 }
 

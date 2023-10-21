@@ -5,7 +5,7 @@
   <title> Dasks </title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://unpkg.com/htmx.org@1.9.5"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.11"></script>
   <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
@@ -19,20 +19,18 @@
     <hgroup class="flex flex-col ">
       <span class="flex flex-row">
         <h1 class="font-bold text-3xl">Dasks</h1>
-        +
       </span>
       <h3 class="opacity-50 text-sm ">Task manager built with Deno+KV+HTMX</h3>
     </hgroup>
-    </header>
+
     <div class=" container  items-center justify-center py-4 px-2 w-full  ">
       <form class="flex flex-row" hx-post="/tasks" hx-target="#tasks" hx-ext="json-enc" _="on submit target.reset()" />
       <input id="task" name="task" type="text" placeholder="Enter Task..."
         class="text-sm p-2 border rounded w-full mr-8" />
     </div>
-    <div class="flex  items-center py-4 px-2" id="tasks" hx-get="/tasks" hx-trigger="load">
+    <div class="flex items-center py-4 px-2" id="tasks" hx-get="/tasks" hx-trigger="load">
     </div>
   </div>
-
 </body>
 
 </html>
